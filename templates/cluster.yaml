@@ -1,0 +1,21 @@
+{{- if eq .Values.cluster.createSecret true -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "name" . }}-incluster
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.cluster.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    argocd.argoproj.io/secret-type: cluster
+    argocd.argoproj.io/incluster: "true"
+  {{- with .Values.cluster.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  name: {{ .Values.cluster.name | b64enc }}
+  config: eyJ0bHNDbGllbnRDb25maWciOnsiaW5zZWN1cmUiOmZhbHNlfX0=
+  server: aHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3Zj
+{{- end -}}

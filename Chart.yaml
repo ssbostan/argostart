@@ -1,0 +1,9 @@
+apiVersion: v2
+name: argostart
+description: A chart to deploy the first ArgoCD Application and credentials to implement AppOfApps and AppOfAppSets.
+type: application
+version: 0.0.1
+appVersion: 0.0.1
+maintainers:
+  - name: Saeid Bostandoust
+    email: ssbostan@yahoo.com

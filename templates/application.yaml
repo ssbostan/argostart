@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "name" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.application.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.application.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ ternary (include "name" .) "default" .Values.project.enable }}
+  source:
+    repoURL: {{ .Values.application.repository }}
+    targetRevision: {{ .Values.application.revision }}
+    path: {{ .Values.cluster.name }}
+    directory:
+      recurse: true
+      include: "*.yaml"
+  destination:
+    name: {{ .Values.cluster.name }}
+    namespace: {{ .Release.Namespace }}
+  info:
+    - name: "Info:"
+      value: "ArgoStart for AppOfApps and AppOfAppSets"
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: true
+    syncOptions:
+      - Validate=true
+      - CreateNamespace=false
+      - PrunePropagationPolicy=foreground
+      - PruneLast=false
+      - RespectIgnoreDifferences=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: -1
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

@@ -1,0 +1,35 @@
+{{- if eq .Values.project.enable true -}}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ include "name" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.project.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.project.labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: ArgoStart for AppOfApps and AppOfAppSets
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+      name: {{ .Values.cluster.name }}
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: false
+  sourceNamespaces:
+    - {{ .Release.Namespace }}
+{{- end -}}

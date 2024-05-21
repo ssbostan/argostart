@@ -1,0 +1,81 @@
+overrideName:
+
+credentials:
+  enable: true
+
+  # Type of secret to be created for GitOps repository access.
+  # Secret: creates a native secret resource.
+  # ExternalSecret: creates an ExternalSecret resource.
+  type: ExternalSecret
+
+  secret:
+    annotations:
+    labels:
+      argocd.argoproj.io/secret-type: repo-creds
+    data:
+      type: git
+      url: https://github.com/ssbostan
+      username: ssbostan
+      password: ssbostan
+
+  secretStore:
+    annotations:
+    labels:
+    provider:
+      # Type of secret provider.
+      # For AWS, IRSA needed. For Azure, Workload Identity needed.
+      # aws: for AWS SecretsManager and ParameterStore.
+      # azure: for Azure Key Vault.
+      type: aws
+      aws:
+        service: SecretsManager
+        region: eu-west-2
+      azure:
+        environmentType: PublicCloud
+        vaultUrl: https://ssbostan.vault.azure.net
+
+  externalSecret:
+    annotations:
+    labels:
+    secret:
+      - secretKey: username
+        remoteRef:
+          key: prod/argocd
+          property: GITHUB-REPO-USERNAME
+      - secretKey: password
+        remoteRef:
+          key: prod/argocd
+          property: GITHUB-REPO-PASSWORD
+    target:
+      annotations:
+      labels:
+        argocd.argoproj.io/secret-type: repo-creds
+      data:
+        type: git
+        url: https://github.com/ssbostan
+
+  serviceAccount:
+    annotations:
+      # For AWS IRSA add the following annotation.
+      eks.amazonaws.com/role-arn: arn:aws:iam::112233445566:role/Kubedemy_EKS_IRSA_ArgoCD_ArgoStart
+      # For Azure Workload Identity add the following annotations.
+      #azure.workload.identity/tenant-id: 5a02a20e-xxxx-xxxx-xxxx-0ad5b634c5d8
+      #azure.workload.identity/client-id: 7d8cdf74-xxxx-xxxx-xxxx-274d963d358b
+    labels:
+
+cluster:
+  name: ssbostan
+  createSecret: true
+  annotations:
+  labels:
+
+project:
+  enable: true
+  annotations:
+  labels:
+
+application:
+  annotations:
+  labels:
+  repository: https://github.com/ssbostan/argostart-argocd-applications.git
+  revision: test
